@@ -1,10 +1,23 @@
 from typing import Union, Optional
-import pandas as pd
-import polars as pl
 import subprocess
 import tempfile
 import requests
 import time
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+
+try:
+    import polars as pl
+except ImportError:
+    pl = None
+
+try:
+    import pyarrow
+except ImportError:
+    pyarrow = None
 
 
 def _launch_data_viewer(
@@ -28,6 +41,11 @@ def _launch_data_viewer(
                 "infer_schema_length must be 'Inf' or a non-negative integer."
             )
 
+    if isinstance(self, pd.DataFrame) and pd is None:
+        raise ImportError("pandas is not installed. Please install it with `pip install data-viewer-py[pandas]`")
+    if isinstance(self, pl.DataFrame) and pl is None:
+        raise ImportError("polars is not installed. Please install it with `pip install data-viewer-py[polars]`")
+
     # Determine name if not provided
     if name is None:
         name = self.__class__.__name__
@@ -39,6 +57,8 @@ def _launch_data_viewer(
         temp_file_path = temp_file.name
 
         if use_parquet:
+            if pyarrow is None:
+                raise ImportError("pyarrow is not installed. Please install it with `pip install data-viewer-py[arrow]`")
             if isinstance(self, pd.DataFrame):
                 self.to_parquet(temp_file_path)
             else:

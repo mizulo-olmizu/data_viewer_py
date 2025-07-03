@@ -15,20 +15,33 @@ try:
 except ImportError:
     pl = None
 
+use_parquet = True
+try:
+    import pyarrow
+except ImportError:
+    use_parquet = False
 
-def launch_data_viewer_formatter(df):
+
+def launch_data_viewer_formatter(df, p, cycle):
     """
     IPython display formatter that launches the data viewer.
     """
-    _launch_data_viewer(df)
-    return "[Data Viewer launched for the DataFrame. Disable with %unload_ext data_viewer_py.magic]"
+    _launch_data_viewer(df, use_parquet=use_parquet)
+    p.text(
+        "[Data Viewer launched for the DataFrame. Disable with %unload_ext data_viewer_py.magic]"
+    )
 
 
 def load_ipython_extension(ipython):
     """
     Loads the IPython extension.
     """
-    formatter = ipython.display_formatter.plain_text_formatter
+    if get_ipython is None:
+        raise ImportError(
+            "IPython is not installed. Please install it with `pip install ipython`"
+        )
+
+    formatter = ipython.display_formatter.formatters["text/plain"]
     if pd:
         formatter.for_type(pd.DataFrame, launch_data_viewer_formatter)
     if pl:
@@ -42,7 +55,10 @@ def unload_ipython_extension(ipython):
     """
     Unloads the IPython extension.
     """
-    formatter = ipython.display_formatter.plain_text_formatter
+    if get_ipython is None:
+        return
+
+    formatter = ipython.display_formatter.formatters["text/plain"]
     # To unregister, we delete the type from the formatter's dictionary
     if pd and pd.DataFrame in formatter.type_printers:
         del formatter.type_printers[pd.DataFrame]

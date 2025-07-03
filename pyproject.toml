@@ -1,0 +1,27 @@
+[project]
+name = "data-viewer-py"
+version = "0.1.0"
+description = "A Python library to launch the Data Viewer application from pandas/polars DataFrames."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+keywords = ["data viewer", "pandas", "polars"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Visualization",
+]
+
+dependencies = [
+  "pandas>=2.3.0",
+  "polars>=1.3.0",
+  "pyarrow>=17.0.0",
+  "requests>=2.32.0",
+]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+

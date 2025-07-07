@@ -27,12 +27,15 @@ def _launch_data_viewer(
     port: int = 3000,
     timeout: Union[int, float] = 3,
     infer_schema_length: Optional[Union[str, int, float]] = None,
-    app_path: str = "/Applications/data_viewer.app/Contents/MacOS/data_viewer",
+    app_path: str = "/Applications/DataViewer.app/Contents/MacOS/data_viewer",
 ) -> None:
     if infer_schema_length is not None:
         if not (
             infer_schema_length == "Inf"
-            or (isinstance(infer_schema_length, (int, float)) and infer_schema_length >= 0)
+            or (
+                isinstance(infer_schema_length, (int, float))
+                and infer_schema_length >= 0
+            )
         ):
             raise ValueError(
                 "infer_schema_length must be 'Inf' or a non-negative integer."
@@ -111,3 +114,4 @@ def _launch_data_viewer(
 
         if update_data_response.status_code != 200:
             raise RuntimeError(f"Failed to update data. {update_data_response.json()}")
+

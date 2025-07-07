@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import Union, Optional, Any
 import subprocess
 import tempfile
 import requests
@@ -21,7 +21,7 @@ except ImportError:
 
 
 def _launch_data_viewer(
-    self: Union[pd.DataFrame, pl.DataFrame],
+    self: Any,
     name: Optional[str] = None,
     use_parquet: bool = False,
     port: int = 3000,
@@ -32,19 +32,19 @@ def _launch_data_viewer(
     if infer_schema_length is not None:
         if not (
             infer_schema_length == "Inf"
-            or (
-                isinstance(infer_schema_length, (int, float))
-                and infer_schema_length >= 0
-            )
+            or (isinstance(infer_schema_length, (int, float)) and infer_schema_length >= 0)
         ):
             raise ValueError(
                 "infer_schema_length must be 'Inf' or a non-negative integer."
             )
 
-    if isinstance(self, pd.DataFrame) and pd is None:
-        raise ImportError("pandas is not installed. Please install it with `pip install data-viewer-py[pandas]`")
-    if isinstance(self, pl.DataFrame) and pl is None:
-        raise ImportError("polars is not installed. Please install it with `pip install data-viewer-py[polars]`")
+    is_pandas = pd is not None and isinstance(self, pd.DataFrame)
+    is_polars = pl is not None and isinstance(self, pl.DataFrame)
+
+    if not is_pandas and not is_polars:
+        raise TypeError(
+            "The 'view' method is only available for pandas or polars DataFrames."
+        )
 
     # Determine name if not provided
     if name is None:
@@ -58,13 +58,15 @@ def _launch_data_viewer(
 
         if use_parquet:
             if pyarrow is None:
-                raise ImportError("pyarrow is not installed. Please install it with `pip install data-viewer-py[arrow]`")
-            if isinstance(self, pd.DataFrame):
+                raise ImportError(
+                    "pyarrow is not installed. Please install it with `pip install data-viewer-py[arrow]`"
+                )
+            if is_pandas:
                 self.to_parquet(temp_file_path)
             else:
                 self.write_parquet(temp_file_path)
         else:
-            if isinstance(self, pd.DataFrame):
+            if is_pandas:
                 self.to_csv(temp_file_path, index=False)
             else:
                 self.write_csv(temp_file_path)
